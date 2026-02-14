@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dream Education - System Check</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+    </style>
+    <script src="js/store.js"></script>
+</head>
+
+<body>
+    <h1>System Integrity Check</h1>
+    <ul id="log"></ul>
+    <script>
+        const log = document.getElementById('log');
+        function assert(condition, message) {
+            const li = document.createElement('li');
+            li.textContent = (condition ? '[OK] ' : '[FAIL] ') + message;
+            li.style.color = condition ? '#4ade80' : '#f87171';
+            log.appendChild(li);
+        }
+
+        // Test 1: DataStore Init
+        try {
+            assert(typeof DataStore !== 'undefined', 'DataStore loaded');
+            assert(DataStore.getPackages().length > 0, 'Packages initialized');
+        } catch (e) { assert(false, 'DataStore Init Failed: ' + e); }
+
+        // Test 2: Admin Login
+        try {
+            const res = DataStore.login('mendis', 'mendis0530');
+            assert(res.success === true, 'Admin login credentials verified');
+            assert(res.user.role === 'admin', 'Admin role verified');
+        } catch (e) { assert(false, 'Login Test Failed: ' + e); }
+
+        // Test 3: Booking Logic
+        try {
+            const booking = DataStore.createBooking({
+                userId: 'test_user',
+                date: '2026-02-14',
+                slots: ['8:00 AM'],
+                status: 'Pending'
+            });
+            assert(booking.id !== undefined, 'Booking created');
+            const bookings = DataStore.getBookings();
+            assert(bookings.find(b => b.id === booking.id), 'Booking retrieved correctly');
+        } catch (e) { assert(false, 'Booking Test Failed: ' + e); }
+
+    </script>
+</body>
+
+</html>
