@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Dream Education</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="dashboard-layout">
+
+    <!-- Top Navigation -->
+    <nav class="glass-header" style="justify-content: space-between; padding: 0 40px; height: 70px;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h3 style="margin: 0; color: white;">Dream Education</h3>
+            <span class="status-badge" style="background: rgba(99, 102, 241, 0.2); color: var(--primary-color);">Teacher
+                Portal</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="text-align: right;">
+                <h4 id="user-name-display" style="margin: 0; font-size: 0.9rem;">--</h4>
+                <span id="user-balance-display" style="font-size: 0.8rem; color: var(--text-secondary);">Balance:
+                    --</span>
+            </div>
+            <div
+                style="width: 40px; height: 40px; background: var(--gradient-hero); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="ri-user-smile-line" style="color: white; font-size: 1.2rem;"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" style="position: fixed; top: 70px; bottom: 0; overflow-y: auto;">
+        <div class="nav-item active" onclick="loadPage('dashboard')">
+            <i class="ri-dashboard-line"></i> Dashboard
+        </div>
+        <div class="nav-item" onclick="loadPage('booking')">
+            <i class="ri-calendar-check-line"></i> New Booking
+        </div>
+        <div class="nav-item" onclick="loadPage('packages')">
+            <i class="ri-shopping-bag-3-line"></i> Buy Packages
+        </div>
+        <div class="nav-item" onclick="loadPage('history')">
+            <i class="ri-history-line"></i> Booking History
+        </div>
+        <div class="nav-item" onclick="DataStore.logout(); window.location.href='index.html'"
+            style="margin-top: auto; color: var(--danger);">
+            <i class="ri-logout-box-line"></i> Logout
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" style="margin-left: 250px;">
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="page-view">
+            <h1 style="margin-bottom: 30px;">Dashboard Overview</h1>
+            <div class="grid grid-cols-3">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <p style="margin-bottom: 5px;">Credit Balance</p>
+                            <h2 id="balance-large" style="font-size: 2.5rem; color: var(--accent-color);">0 hrs</h2>
+                        </div>
+                        <i class="ri-wallet-3-line" style="font-size: 2rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Recent Activity</h3>
+            <div class="card" style="padding: 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                            <th style="padding: 20px;">Date</th>
+                            <th style="padding: 20px;">Time</th>
+                            <th style="padding: 20px;">Duration</th>
+                            <th style="padding: 20px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="booking-history-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- New Booking View -->
+        <div id="view-booking" class="page-view" style="display: none;">
+            <h1 style="margin-bottom: 30px;">Book a Studio Slot</h1>
+            <div class="grid grid-cols-2">
+                <!-- Date Selection -->
+                <div class="card">
+                    <h3>Select Date</h3>
+                    <input type="date" id="booking-date" style="width: 100%; margin-top: 10px;"
+                        onchange="updateSlots()">
+
+                    <div style="margin-top: 20px;">
+                        <h4 style="margin-bottom: 15px;">Available Slots (08:00 AM - 12:00 Midnight)</h4>
+                        <div class="booking-grid" id="slots-container">
+                            <!-- Slots will be generated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Summary -->
+                <div class="card">
+                    <h3>Booking Summary</h3>
+                    <div
+                        style="margin-top: 20px; padding: 20px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Date:</span>
+                            <span id="summary-date" style="font-weight: bold;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Time:</span>
+                            <span id="summary-time" style="font-weight: bold;">--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>Duration:</span>
+                            <span id="summary-duration" style="font-weight: bold;">--</span>
+                        </div>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;"></div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Total Cost:</span>
+                            <span id="summary-cost" style="font-size: 1.2rem; color: var(--primary-color);">Rs. 0</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <label style="display: block; margin-bottom: 10px;">Payment Method</label>
+                        <select id="payment-method">
+                            <option value="wallet">Subtract from Package</option>
+                            <option value="online">Pay Online Now (Card/Transfer)</option>
+                            <option value="cash">Pay Cash at Studio</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 20px;"
+                        onclick="confirmBooking()">Confirm Booking</button>
+                    <p style="text-align: center; margin-top: 10px; font-size: 0.8rem;">Changes allowed up to 24h
+                        before.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Packages View -->
+        <div id="view-packages" class="page-view" style="display: none;">
+            <h1 style="margin-bottom: 30px;">Purchase Credits</h1>
+            <div id="packages-list" class="grid grid-cols-3">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        function loadPage(pageName) {
+            // Hide all views
+            document.querySelectorAll('.page-view').forEach(el => el.style.display = 'none');
+            // Show selected view
+            const viewId = 'view-' + (pageName === 'history' ? 'dashboard' : pageName);
+            const target = document.getElementById(viewId);
+            if (target) target.style.display = 'block';
+
+            // Update Sidebar
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        // Initialize Booking Slots
+        function updateSlots() {
+            const dateStr = document.getElementById('booking-date').value;
+            if (!dateStr) return;
+
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+
+            // Generate slots from 8 AM (8) to 12 AM (24)
+            for (let i = 8; i <= 24; i++) {
+                const hour = i > 12 ? (i === 24 ? 12 : i - 12) : i;
+                const ampm = i >= 12 && i < 24 ? 'PM' : 'AM';
+                const nextAmpm = (i + 1) >= 12 && (i + 1) < 24 ? 'PM' : (i + 1) === 24 ? 'AM' : 'AM'; // simplistic logic
+                const timeString = `${hour}:00 ${ampm}`;
+                const rawTime = i; // Store simplified hour for logic
+
+                // Exclude if already booked (Check against store)
+                // We'd need accurate conflict logic here, but for now just visual
+
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.textContent = timeString;
+
+                // Simple visual check for occupied slots? Not implemented in this snippet to keep it simple
+                // In full app, we would query DataStore.checkAvailability() here
+
+                slot.onclick = () => selectSlot(slot, timeString);
+                container.appendChild(slot);
+            }
+        }
+
+        let selectedSlots = [];
+        function selectSlot(el, time) {
+            if (el.classList.contains('disabled')) return;
+
+            if (el.classList.contains('selected')) {
+                el.classList.remove('selected');
+                selectedSlots = selectedSlots.filter(t => t !== time);
+            } else {
+                el.classList.add('selected');
+                selectedSlots.push(time);
+            }
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const date = document.getElementById('booking-date').value || 'Select a date';
+            document.getElementById('summary-date').textContent = date;
+            document.getElementById('summary-time').textContent = selectedSlots.length > 0 ? selectedSlots.join(', ') : '--';
+            document.getElementById('summary-duration').textContent = selectedSlots.length + ' Hours';
+            document.getElementById('summary-cost').textContent = 'Rs. ' + (selectedSlots.length * 500);
+        }
+
+        // Init
+        document.getElementById('booking-date').valueAsDate = new Date();
+        updateSlots();
+    </script>
+</body>
+
+</html>

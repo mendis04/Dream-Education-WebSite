@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Dream Education</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/store.js"></script>
+    <script src="js/main.js"></script>
+    <style>
+        .admin-sidebar {
+            background-color: #0f172a;
+        }
+
+        .action-btn {
+            cursor: pointer;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            color: white;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+
+<body class="dashboard-layout">
+    <nav class="glass-header"
+        style="justify-content: space-between; padding: 0 40px; height: 70px; background: rgba(15, 23, 42, 0.9);">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <h3 style="margin: 0; color: white;">Dream Education</h3>
+            <span class="status-badge" style="background: rgba(236, 72, 153, 0.2); color: var(--secondary-color);">Admin
+                Console</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="text-align: right;">
+                <h4 style="margin: 0; font-size: 0.9rem;">Studio Manager</h4>
+            </div>
+            <div
+                style="width: 40px; height: 40px; background: var(--secondary-color); border-radius: 50%; display: center; align-items: center; justify-content: center;">
+                <i class="ri-admin-line" style="color: white; font-size: 1.2rem;"></i>
+            </div>
+        </div>
+    </nav>
+    <aside class="sidebar admin-sidebar" style="position: fixed; top: 70px; bottom: 0;">
+        <div class="nav-item active" onclick="showSection('dashboard')"><i class="ri-dashboard-3-line"></i> Overview
+        </div>
+        <div class="nav-item" onclick="showSection('bookings')"><i class="ri-calendar-check-line"></i> Manage Bookings
+        </div>
+        <div class="nav-item" onclick="showSection('packages')"><i class="ri-price-tag-3-line"></i> Packages</div>
+        <div class="nav-item" onclick="showSection('reports')"><i class="ri-file-excel-2-line"></i> Financial Reports
+        </div>
+        <div class="nav-item" onclick="DataStore.logout(); window.location.href='index.html'" style="margin-top: auto;">
+            <i class="ri-logout-box-r-line"></i> Logout</div>
+    </aside>
+    <main class="main-content" style="margin-left: 250px;">
+        <section id="sec-dashboard">
+            <h1 style="margin-bottom: 30px;">Studio Overview</h1>
+            <div class="grid grid-cols-4">
+                <div class="card">
+                    <p>Total Bookings</p>
+                    <h2 id="total-bookings" style="color: var(--success);">0</h2>
+                </div>
+                <div class="card">
+                    <p>Pending Approval</p>
+                    <h2 id="pending-bookings" style="color: var(--warning);">0</h2>
+                </div>
+            </div>
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Pending Booking Requests</h3>
+            <div class="card" style="padding: 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left;">
+                            <th style="padding: 15px;">Teacher</th>
+                            <th style="padding: 15px;">Date & Time</th>
+                            <th style="padding: 15px;">Payment/Cost</th>
+                            <th style="padding: 15px;">Status</th>
+                            <th style="padding: 15px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-requests-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <section id="sec-reports" style="display: none;">
+            <h1>Reports</h1>
+            <div class="card">
+                <h3>Export Data</h3>
+                <p style="margin-bottom: 20px;">Download detailed reports for offline analysis.</p>
+                <button class="btn btn-primary" onclick="generateExcel()">Download Monthly Report (CSV)</button>
+            </div>
+        </section>
+        <section id="sec-packages" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h1>Manage Packages</h1>
+            </div>
+            <div id="admin-packages-list" class="grid grid-cols-3">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+    </main>
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(el => el.style.display = 'none');
+            const target = document.getElementById('sec-' + sectionId);
+            if (target) target.style.display = 'block';
+            else document.getElementById('sec-dashboard').style.display = 'block';
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        function generateExcel() {
+            const bookings = DataStore.getBookings();
+            const header = ['ID,Date,Teacher,Slots,Cost,Status,Method'];
+            const rows = bookings.map(b => `${b.id},${b.date},${b.userName},"${b.slots.join(';')}",${b.cost},${b.status},${b.method}`);
+            const csvContent = "data:text/csv;charset=utf-8," + header.concat(rows).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "dream_education_report.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        // Load Packages in Admin View
+        const pkgs = DataStore.getPackages();
+        const pkgContainer = document.getElementById('admin-packages-list');
+        if (pkgContainer) {
+            pkgContainer.innerHTML = pkgs.map(p => `
+                <div class="card">
+                    <h3>${p.name}</h3>
+                    <p>Rs. ${p.price} | ${p.hours} Hours</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-outline" style="flex: 1; border-color: var(--danger); color: var(--danger);" onclick="alert('Feature to delete package coming soon!')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+
+</html>
